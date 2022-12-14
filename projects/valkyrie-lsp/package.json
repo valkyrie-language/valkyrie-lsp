@@ -1,6 +1,7 @@
 {
     "private": true,
     "scripts": {
+        "i": "cargo install --path . --force --deubg",
         "p": "cargo publish --allow-dirty"
     }
 }

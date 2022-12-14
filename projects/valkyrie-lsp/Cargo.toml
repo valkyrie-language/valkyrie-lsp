@@ -1,5 +1,5 @@
 [package]
-name = "sub_projects"
+name = "valkyrie-lsp"
 publish = false
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
@@ -7,13 +7,15 @@ description = "..."
 categories = ["rust-patterns"]
 homepage = "https://github.com/oovm/RustTemplate"
 repository = "https://github.com/oovm/RustTemplate"
-documentation = "https://docs.rs/sub_projects"
+documentation = "https://docs.rs/valkyrie-lsp"
 readme = "readme.md"
 license = "MPL-2.0"
 edition = "2021"
 exclude = ["package.json", "tests/**"]
 
 [dependencies]
+tower-lsp = "0.20.0"
+tokio = { version = "1.37.0", features = ["full"] }
 
 [dev-dependencies]
 
