@@ -87,7 +87,10 @@ impl LanguageServer for ValkyrieLanguageServer {
                 color_provider: None,
                 folding_range_provider: None,
                 execute_command_provider: None,
-                workspace: None,
+                workspace: Some(WorkspaceServerCapabilities {
+                    workspace_folders: None,
+                    file_operations: None,
+                }),
                 call_hierarchy_provider: None,
                 semantic_tokens_provider: None,
                 moniker_provider: None,
@@ -105,9 +108,36 @@ impl LanguageServer for ValkyrieLanguageServer {
         })
     }
 
-    async fn goto_type_definition(&self, params: GotoTypeDefinitionParams) -> Result<Option<GotoTypeDefinitionResponse>> {
-        // each type has only one declaration position
-        // But in the case of repeated definitions by mistake, there will be multiple declaration locations
+    async fn initialized(&self, _: InitializedParams) {
+        self.proxy
+            .log_message(MessageType::INFO, "server initialized!")
+            .await;
+    }
+    async fn shutdown(&self) -> Result<()> {
+        Ok(())
+    }
+
+    async fn did_open(&self, params: DidOpenTextDocumentParams)  {
+        todo!()
+    }
+    async fn did_change(&self, params: DidChangeTextDocumentParams)  {
+        todo!()
+    }
+    async fn will_save(&self, params: WillSaveTextDocumentParams)  {
+        todo!()
+    }
+
+    async fn will_save_wait_until(&self, params: WillSaveTextDocumentParams) -> Result<Option<Vec<TextEdit>>> {
+        todo!()
+    }
+
+    async fn did_save(&self, params: DidSaveTextDocumentParams)  {
+        todo!()
+    }
+    async fn did_close(&self, params: DidCloseTextDocumentParams)  {
+        todo!()
+    }
+    async fn goto_declaration(&self, params: GotoDeclarationParams) -> Result<Option<GotoDeclarationResponse>> {
         Ok(Some(GotoDefinitionResponse::Array(vec![])))
     }
 
@@ -115,25 +145,205 @@ impl LanguageServer for ValkyrieLanguageServer {
         // a function or method may have multiple definition locations
         Ok(Some(GotoDefinitionResponse::Array(vec![])))
     }
-    async fn goto_declaration(&self, params: GotoDeclarationParams) -> Result<Option<GotoDeclarationResponse>> {
+    async fn goto_type_definition(&self, params: GotoTypeDefinitionParams) -> Result<Option<GotoTypeDefinitionResponse>> {
+        // each type has only one declaration position
+        // But in the case of repeated definitions by mistake, there will be multiple declaration locations
         Ok(Some(GotoDefinitionResponse::Array(vec![])))
     }
     async fn goto_implementation(&self, params: GotoImplementationParams) -> Result<Option<GotoImplementationResponse>> {
         Ok(Some(GotoDefinitionResponse::Array(vec![])))
     }
-
-    async fn initialized(&self, _: InitializedParams) {
-        self.proxy
-            .log_message(MessageType::INFO, "server initialized!")
-            .await;
+    async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
+        Ok(Some(vec![]))
     }
-
-    async fn shutdown(&self) -> Result<()> {
-        Ok(())
+    async fn prepare_call_hierarchy(&self, params: CallHierarchyPrepareParams) -> Result<Option<Vec<CallHierarchyItem>>> {
+        todo!()
     }
-
+    async fn incoming_calls(&self, params: CallHierarchyIncomingCallsParams) -> Result<Option<Vec<CallHierarchyIncomingCall>>> {
+        todo!()
+    }
+    async fn outgoing_calls(&self, params: CallHierarchyOutgoingCallsParams) -> Result<Option<Vec<CallHierarchyOutgoingCall>>> {
+        todo!()
+    }
+    async fn prepare_type_hierarchy(&self, params: TypeHierarchyPrepareParams) -> Result<Option<Vec<TypeHierarchyItem>>> {
+        todo!()
+    }
+    async  fn supertypes(&self, params: TypeHierarchySupertypesParams) -> Result<Option<Vec<TypeHierarchyItem>>> {
+        let item = TypeHierarchyItem {
+            name: "supertypes".to_string(),
+            kind: SymbolKind::CLASS,
+            tags: None,
+            detail: Some("supertypes details".to_string()),
+            uri: params.item.uri,
+            range: Default::default(),
+            selection_range: Default::default(),
+            data: None,
+        };
+        Ok(Some(vec![item]))
+    }
+    async  fn subtypes(&self, params: TypeHierarchySubtypesParams) -> Result<Option<Vec<TypeHierarchyItem>>> {
+        let item = TypeHierarchyItem {
+            name: "subtypes".to_string(),
+            kind: SymbolKind::CLASS,
+            tags: None,
+            detail: Some("subtypes details".to_string()),
+            uri: params.item.uri,
+            range: Default::default(),
+            selection_range: Default::default(),
+            data: None,
+        };
+        Ok(Some(vec![item]))
+    }
+    async fn document_highlight(&self, params: DocumentHighlightParams) -> Result<Option<Vec<DocumentHighlight>>> {
+        todo!()
+    }
+    async fn document_link(&self, params: DocumentLinkParams) -> Result<Option<Vec<DocumentLink>>> {
+        todo!()
+    }
+    async fn document_link_resolve(&self, params: DocumentLink) -> Result<DocumentLink> {
+        todo!()
+    }
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
         let debug = format!("```json\n{:#?}\n```", params);
         Ok(Some(Hover { contents: HoverContents::Markup(MarkupContent { kind: MarkupKind::Markdown, value: debug }), range: None }))
+    }
+    async fn code_lens(&self, params: CodeLensParams) -> Result<Option<Vec<CodeLens>>> {
+        todo!()
+    }
+    async fn code_lens_resolve(&self, params: CodeLens) -> Result<CodeLens> {
+        todo!()
+    }
+    async fn folding_range(&self, params: FoldingRangeParams) -> Result<Option<Vec<FoldingRange>>> {
+        todo!()
+    }
+    async fn selection_range(&self, params: SelectionRangeParams) -> Result<Option<Vec<SelectionRange>>> {
+        todo!()
+    }
+    async fn document_symbol(&self, params: DocumentSymbolParams) -> Result<Option<DocumentSymbolResponse>> {
+        todo!()
+    }
+    async fn semantic_tokens_full(&self, params: SemanticTokensParams) -> Result<Option<SemanticTokensResult>> {
+        todo!()
+    }
+    async fn semantic_tokens_full_delta(&self, params: SemanticTokensDeltaParams) -> Result<Option<SemanticTokensFullDeltaResult>> {
+        todo!()
+    }
+    async fn semantic_tokens_range(&self, params: SemanticTokensRangeParams) -> Result<Option<SemanticTokensRangeResult>> {
+        todo!()
+    }
+
+    async fn inline_value(&self, params: InlineValueParams) -> Result<Option<Vec<InlineValue>>> {
+        todo!()
+    }
+    async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
+        todo!()
+    }
+    async fn inlay_hint_resolve(&self, params: InlayHint) -> Result<InlayHint> {
+        todo!()
+    }
+    async fn moniker(&self, params: MonikerParams) -> Result<Option<Vec<Moniker>>> {
+        todo!()
+    }
+    async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
+        todo!()
+    }
+    async fn completion_resolve(&self, params: CompletionItem) -> Result<CompletionItem> {
+        todo!()
+    }
+    async fn diagnostic(&self, params: DocumentDiagnosticParams) -> Result<DocumentDiagnosticReportResult> {
+        todo!()
+    }
+    async fn workspace_diagnostic(&self, params: WorkspaceDiagnosticParams) -> Result<WorkspaceDiagnosticReportResult> {
+        todo!()
+    }
+    async fn signature_help(&self, params: SignatureHelpParams) -> Result<Option<SignatureHelp>> {
+        todo!()
+    }
+    async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
+        let command = CodeActionOrCommand::Command(Command {
+            title: "command place holder".to_string(),
+            command: "".to_string(),
+            arguments: None,
+        });
+        let command2 = Command {
+            title: "command in action".to_string(),
+            command: "".to_string(),
+            arguments: None,
+        };
+        let action = CodeActionOrCommand::CodeAction(CodeAction {
+            title: "action place holder".to_string(),
+            kind: None,
+            diagnostics: None,
+            edit: None,
+            command: Some(command2),
+            is_preferred: None,
+            disabled: None,
+            data: None,
+        });
+        Ok(Some(vec![action, command]))
+    }
+    async fn code_action_resolve(&self, params: CodeAction) -> Result<CodeAction> {
+        todo!()
+    }
+    async fn document_color(&self, params: DocumentColorParams) -> Result<Vec<ColorInformation>> {
+        todo!()
+    }
+    async fn color_presentation(&self, params: ColorPresentationParams) -> Result<Vec<ColorPresentation>> {
+        todo!()
+    }
+    async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
+        todo!()
+    }
+    async fn range_formatting(&self, params: DocumentRangeFormattingParams) -> Result<Option<Vec<TextEdit>>> {
+        todo!()
+    }
+    async fn on_type_formatting(&self, params: DocumentOnTypeFormattingParams) -> Result<Option<Vec<TextEdit>>> {
+        todo!()
+    }
+    async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
+        todo!()
+    }
+    async fn prepare_rename(&self, params: TextDocumentPositionParams) -> Result<Option<PrepareRenameResponse>> {
+        todo!()
+    }
+    async fn linked_editing_range(&self, params: LinkedEditingRangeParams) -> Result<Option<LinkedEditingRanges>> {
+        todo!()
+    }
+    async fn symbol(&self, params: WorkspaceSymbolParams) -> Result<Option<Vec<SymbolInformation>>> {
+        todo!()
+    }
+    async fn symbol_resolve(&self, params: WorkspaceSymbol) -> Result<WorkspaceSymbol> {
+        todo!()
+    }
+    async fn did_change_configuration(&self, params: DidChangeConfigurationParams)  {
+        todo!()
+    }
+    async fn did_change_workspace_folders(&self, params: DidChangeWorkspaceFoldersParams)  {
+        todo!()
+    }
+    async fn will_create_files(&self, params: CreateFilesParams) -> Result<Option<WorkspaceEdit>> {
+        todo!()
+    }
+    async fn did_create_files(&self, params: CreateFilesParams)  {
+        todo!()
+    }
+    async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
+        todo!()
+    }
+    async fn did_rename_files(&self, params: RenameFilesParams)  {
+        todo!()
+    }
+    async fn will_delete_files(&self, params: DeleteFilesParams) -> Result<Option<WorkspaceEdit>> {
+        todo!()
+    }
+    async fn did_delete_files(&self, params: DeleteFilesParams)  {
+        todo!()
+    }
+    async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams)  {
+        todo!()
+    }
+
+    async fn execute_command(&self, params: ExecuteCommandParams) -> Result<Option<LSPAny>> {
+        todo!()
     }
 }
