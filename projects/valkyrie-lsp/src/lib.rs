@@ -14,7 +14,7 @@ use std::future::Future;
 use std::pin::Pin;
 pub use crate::errors::{ExampleErrorKind, ExampleError};
 
-use tower_lsp::jsonrpc::Result;
+use tower_lsp::jsonrpc::{Error, Result};
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, ClientSocket, LanguageServer, LspService};
 use tower_lsp::lsp_types::request::{GotoDeclarationParams, GotoDeclarationResponse, GotoImplementationParams, GotoImplementationResponse, GotoTypeDefinitionParams, GotoTypeDefinitionResponse};
@@ -46,9 +46,17 @@ impl LanguageServer for ValkyrieLanguageServer {
                 completion_provider: None,
                 signature_help_provider: None,
                 declaration_provider: Some(DeclarationCapability::RegistrationOptions(DeclarationRegistrationOptions {
-                    declaration_options: DeclarationOptions { work_done_progress_options: Default::default() },
-                    text_document_registration_options: Default::default(),
-                    static_registration_options: Default::default(),
+                    declaration_options: DeclarationOptions {
+                        work_done_progress_options: WorkDoneProgressOptions {
+                            work_done_progress: Some(true),
+                        }
+                    },
+                    text_document_registration_options: TextDocumentRegistrationOptions {
+                        document_selector: None,
+                    },
+                    static_registration_options: StaticRegistrationOptions {
+                        id: None,
+                    },
                 })),
                 definition_provider: Some(OneOf::Right(DefinitionOptions {
                     work_done_progress_options: WorkDoneProgressOptions {
@@ -117,28 +125,48 @@ impl LanguageServer for ValkyrieLanguageServer {
         Ok(())
     }
 
-    async fn did_open(&self, params: DidOpenTextDocumentParams)  {
-        todo!()
+    async fn did_open(&self, params: DidOpenTextDocumentParams) {
+
     }
-    async fn did_change(&self, params: DidChangeTextDocumentParams)  {
-        todo!()
+    async fn did_change(&self, params: DidChangeTextDocumentParams) {
+
     }
-    async fn will_save(&self, params: WillSaveTextDocumentParams)  {
-        todo!()
+    async fn will_save(&self, params: WillSaveTextDocumentParams) {
+
     }
 
     async fn will_save_wait_until(&self, params: WillSaveTextDocumentParams) -> Result<Option<Vec<TextEdit>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
 
-    async fn did_save(&self, params: DidSaveTextDocumentParams)  {
-        todo!()
+    async fn did_save(&self, params: DidSaveTextDocumentParams) {
+
     }
-    async fn did_close(&self, params: DidCloseTextDocumentParams)  {
-        todo!()
+    async fn did_close(&self, params: DidCloseTextDocumentParams) {
+
     }
     async fn goto_declaration(&self, params: GotoDeclarationParams) -> Result<Option<GotoDeclarationResponse>> {
-        Ok(Some(GotoDefinitionResponse::Array(vec![])))
+        let here1 = Location {
+            uri: params.text_document_position_params.text_document.uri.clone(),
+            range: Range {
+                start: Position {
+                    line: 0,
+                    character: 0,
+                },
+                end: params.text_document_position_params.position,
+            },
+        };
+        let here2 = Location {
+            uri: params.text_document_position_params.text_document.uri.clone(),
+            range: Range {
+                start: params.text_document_position_params.position,
+                end: Position {
+                    line: 0,
+                    character: 0,
+                },
+            },
+        };
+        Ok(Some(GotoDefinitionResponse::Array(vec![here1, here2])))
     }
 
     async fn goto_definition(&self, params: GotoDefinitionParams) -> Result<Option<GotoDefinitionResponse>> {
@@ -157,18 +185,18 @@ impl LanguageServer for ValkyrieLanguageServer {
         Ok(Some(vec![]))
     }
     async fn prepare_call_hierarchy(&self, params: CallHierarchyPrepareParams) -> Result<Option<Vec<CallHierarchyItem>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn incoming_calls(&self, params: CallHierarchyIncomingCallsParams) -> Result<Option<Vec<CallHierarchyIncomingCall>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn outgoing_calls(&self, params: CallHierarchyOutgoingCallsParams) -> Result<Option<Vec<CallHierarchyOutgoingCall>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn prepare_type_hierarchy(&self, params: TypeHierarchyPrepareParams) -> Result<Option<Vec<TypeHierarchyItem>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
-    async  fn supertypes(&self, params: TypeHierarchySupertypesParams) -> Result<Option<Vec<TypeHierarchyItem>>> {
+    async fn supertypes(&self, params: TypeHierarchySupertypesParams) -> Result<Option<Vec<TypeHierarchyItem>>> {
         let item = TypeHierarchyItem {
             name: "supertypes".to_string(),
             kind: SymbolKind::CLASS,
@@ -181,7 +209,7 @@ impl LanguageServer for ValkyrieLanguageServer {
         };
         Ok(Some(vec![item]))
     }
-    async  fn subtypes(&self, params: TypeHierarchySubtypesParams) -> Result<Option<Vec<TypeHierarchyItem>>> {
+    async fn subtypes(&self, params: TypeHierarchySubtypesParams) -> Result<Option<Vec<TypeHierarchyItem>>> {
         let item = TypeHierarchyItem {
             name: "subtypes".to_string(),
             kind: SymbolKind::CLASS,
@@ -195,69 +223,69 @@ impl LanguageServer for ValkyrieLanguageServer {
         Ok(Some(vec![item]))
     }
     async fn document_highlight(&self, params: DocumentHighlightParams) -> Result<Option<Vec<DocumentHighlight>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn document_link(&self, params: DocumentLinkParams) -> Result<Option<Vec<DocumentLink>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn document_link_resolve(&self, params: DocumentLink) -> Result<DocumentLink> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
         let debug = format!("```json\n{:#?}\n```", params);
         Ok(Some(Hover { contents: HoverContents::Markup(MarkupContent { kind: MarkupKind::Markdown, value: debug }), range: None }))
     }
     async fn code_lens(&self, params: CodeLensParams) -> Result<Option<Vec<CodeLens>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn code_lens_resolve(&self, params: CodeLens) -> Result<CodeLens> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn folding_range(&self, params: FoldingRangeParams) -> Result<Option<Vec<FoldingRange>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn selection_range(&self, params: SelectionRangeParams) -> Result<Option<Vec<SelectionRange>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn document_symbol(&self, params: DocumentSymbolParams) -> Result<Option<DocumentSymbolResponse>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn semantic_tokens_full(&self, params: SemanticTokensParams) -> Result<Option<SemanticTokensResult>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn semantic_tokens_full_delta(&self, params: SemanticTokensDeltaParams) -> Result<Option<SemanticTokensFullDeltaResult>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn semantic_tokens_range(&self, params: SemanticTokensRangeParams) -> Result<Option<SemanticTokensRangeResult>> {
-        todo!()
+        Err(Error::method_not_found())
     }
 
     async fn inline_value(&self, params: InlineValueParams) -> Result<Option<Vec<InlineValue>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn inlay_hint_resolve(&self, params: InlayHint) -> Result<InlayHint> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn moniker(&self, params: MonikerParams) -> Result<Option<Vec<Moniker>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn completion_resolve(&self, params: CompletionItem) -> Result<CompletionItem> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn diagnostic(&self, params: DocumentDiagnosticParams) -> Result<DocumentDiagnosticReportResult> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn workspace_diagnostic(&self, params: WorkspaceDiagnosticParams) -> Result<WorkspaceDiagnosticReportResult> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn signature_help(&self, params: SignatureHelpParams) -> Result<Option<SignatureHelp>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
         let command = CodeActionOrCommand::Command(Command {
@@ -283,67 +311,67 @@ impl LanguageServer for ValkyrieLanguageServer {
         Ok(Some(vec![action, command]))
     }
     async fn code_action_resolve(&self, params: CodeAction) -> Result<CodeAction> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn document_color(&self, params: DocumentColorParams) -> Result<Vec<ColorInformation>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn color_presentation(&self, params: ColorPresentationParams) -> Result<Vec<ColorPresentation>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn range_formatting(&self, params: DocumentRangeFormattingParams) -> Result<Option<Vec<TextEdit>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn on_type_formatting(&self, params: DocumentOnTypeFormattingParams) -> Result<Option<Vec<TextEdit>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn prepare_rename(&self, params: TextDocumentPositionParams) -> Result<Option<PrepareRenameResponse>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn linked_editing_range(&self, params: LinkedEditingRangeParams) -> Result<Option<LinkedEditingRanges>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn symbol(&self, params: WorkspaceSymbolParams) -> Result<Option<Vec<SymbolInformation>>> {
-        todo!()
+        Err(Error::method_not_found())
     }
     async fn symbol_resolve(&self, params: WorkspaceSymbol) -> Result<WorkspaceSymbol> {
-        todo!()
+        Err(Error::method_not_found())
     }
-    async fn did_change_configuration(&self, params: DidChangeConfigurationParams)  {
-        todo!()
+    async fn did_change_configuration(&self, params: DidChangeConfigurationParams) {
+
     }
-    async fn did_change_workspace_folders(&self, params: DidChangeWorkspaceFoldersParams)  {
-        todo!()
+    async fn did_change_workspace_folders(&self, params: DidChangeWorkspaceFoldersParams) {
+
     }
     async fn will_create_files(&self, params: CreateFilesParams) -> Result<Option<WorkspaceEdit>> {
-        todo!()
+        Err(Error::method_not_found())
     }
-    async fn did_create_files(&self, params: CreateFilesParams)  {
-        todo!()
+    async fn did_create_files(&self, params: CreateFilesParams) {
+
     }
     async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
-        todo!()
+        Err(Error::method_not_found())
     }
-    async fn did_rename_files(&self, params: RenameFilesParams)  {
-        todo!()
+    async fn did_rename_files(&self, params: RenameFilesParams) {
+
     }
     async fn will_delete_files(&self, params: DeleteFilesParams) -> Result<Option<WorkspaceEdit>> {
-        todo!()
+        Err(Error::method_not_found())
     }
-    async fn did_delete_files(&self, params: DeleteFilesParams)  {
-        todo!()
+    async fn did_delete_files(&self, params: DeleteFilesParams) {
+
     }
-    async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams)  {
-        todo!()
+    async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams) {
+
     }
 
     async fn execute_command(&self, params: ExecuteCommandParams) -> Result<Option<LSPAny>> {
-        todo!()
+        Err(Error::method_not_found())
     }
 }
